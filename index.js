@@ -1,10 +1,12 @@
 const fs = require('node:fs')
 const path = require('node:path')
-const { Client, GatewayIntentBits, Collection } = require('discord.js')
+const { Client, GatewayIntentBits, Collection, Events } = require('discord.js')
 const { token } = require('./config.json')
 
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions
 ] })
 
 const eventsPath = path.join(__dirname, 'events')
@@ -31,7 +33,7 @@ commandFiles.forEach(file => {
     commands.set(command.data.name, command)
 })
 
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return
 
     const command = commands.get(interaction.commandName)
@@ -42,11 +44,11 @@ client.on('interactionCreate', async interaction => {
         await command.execute(interaction)
     } catch (error) {
         console.error(error)
-        await interaction.reply({ content: 'There was an error executing this command', epehemeral: true })
+        await interaction.reply({ content: 'There was an error executing this command', ephemeral: true })
     }
 })
 
-client.once('ready', () => {
+client.once(Events.ClientReady, () => {
     console.log(`Ready! Logged in as ${client.user.tag}`)
 })
 
